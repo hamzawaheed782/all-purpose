@@ -3,45 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-    }
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 24px;
-      padding: 60px 40px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      max-width: 480px;
-    }
-    h1 { font-size: 2.5rem; margin-bottom: 12px; }
-    p  { opacity: 0.75; line-height: 1.6; }
-    .badge {
-      display: inline-block;
-      margin-top: 24px;
-      padding: 8px 16px;
-      background: #38bdf8;
-      color: #0f172a;
-      border-radius: 9999px;
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
-  </style>
+  <title>Pastel Threads — Wear the Soft Side</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="card">
-    <h1>👋 Hello World</h1>
-    <p>This is a simple static page served from the <strong>all-purpose</strong> repository.</p>
-    <span class="badge">Static Page</span>
-  </div>
+  <header class="hero">
+    <nav>
+      <div class="logo">Pastel Threads</div>
+      <ul class="nav-links">
+        <li><a href="#collection">Collection</a></li>
+        <li><a href="#lookbook">Lookbook</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </nav>
+    <div class="hero-content">
+      <h1 class="hero-title">Wear the<br /><span class="accent">Soft Side</span></h1>
+      <p class="hero-sub">Premium essentials dyed in dreamy pastels. Designed for calm mornings and warm evenings.</p>
+      <a href="#collection" class="cta">Shop the Drop</a>
+    </div>
+  </header>
+
+  <section id="collection" class="section">
+    <h2 class="section-title">New Drop</h2>
+    <p class="section-sub">Oversized silhouettes. Airy fabrics. Muted tones.</p>
+    <div class="grid">
+      <article class="card">
+        <div class="card-image" data-color="#ffd6e0"></div>
+        <h3>Blush Overshirt</h3>
+        <p>Heavy cotton, relaxed fit.</p>
+        <span class="price">$68</span>
+        <button class="btn">Add to Bag</button>
+      </article>
+      <article class="card">
+        <div class="card-image" data-color="#cbe8d4"></div>
+        <h3>Sage Wide Pants</h3>
+        <p>Pleated, flowy, daily driver.</p>
+        <span class="price">$74</span>
+        <button class="btn">Add to Bag</button>
+      </article>
+      <article class="card">
+        <div class="card-image" data-color="#fff3b0"></div>
+        <h3>Butter Tee</h3>
+        <p>Lightweight jersey, lived-in feel.</p>
+        <span class="price">$42</span>
+        <button class="btn">Add to Bag</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="lookbook" class="section lookbook">
+    <h2 class="section-title">Lookbook</h2>
+    <div class="marquee">
+      <div class="track">
+        <div class="look-item" data-bg="#ffd6e0"></div>
+        <div class="look-item" data-bg="#cbe8d4"></div>
+        <div class="look-item" data-bg="#fff3b0"></div>
+        <div class="look-item" data-bg="#d0dff9"></div>
+        <div class="look-item" data-bg="#f6d6ff"></div>
+        <div class="look-item" data-bg="#ffd6e0"></div>
+        <div class="look-item" data-bg="#cbe8d4"></div>
+        <div class="look-item" data-bg="#fff3b0"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="section about">
+    <h2 class="section-title">About</h2>
+    <p>We design clothes for slow mornings and soft evenings. Every piece is made with breathable fabrics and a palette inspired by sunrise gardens.</p>
+  </section>
+
+  <footer class="footer">
+    <p>© 2026 Pastel Threads</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
