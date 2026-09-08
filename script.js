@@ -6,6 +6,11 @@ document.querySelectorAll('.card').forEach((card, i) => {
   const base = img.getAttribute('data-color') || '#ffd6e0';
   img.style.background = base;
 
+  if ('ontouchstart' in window) {
+    img.style.background = `radial-gradient(circle at 50% 50%, ${lighten(base, 35)}, ${base})`;
+    return;
+  }
+
   card.addEventListener('mousemove', (e) => {
     if (prefersReduced) return;
     const rect = card.getBoundingClientRect();
@@ -53,3 +58,12 @@ const observer = new IntersectionObserver(
 );
 
 document.querySelectorAll('.track').forEach((t) => observer.observe(t));
+
+if ('ontouchstart' in window) {
+  document.querySelectorAll('.card').forEach((card) => {
+    card.style.touchAction = 'manipulation';
+  });
+  document.querySelectorAll('.btn').forEach((btn) => {
+    btn.style.minHeight = '48px';
+  });
+}
