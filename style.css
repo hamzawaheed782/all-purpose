@@ -193,6 +193,94 @@ nav {
   font-size: 0.85rem;
 }
 
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background: #0d0d0d;
+  color: #e0e0e0;
+}
+body.dark-mode .hero {
+  background:
+    radial-gradient(circle at 20% 10%, #1a1a2e 0%, transparent 35%),
+    radial-gradient(circle at 80% 20%, #1a1a3e 0%, transparent 35%),
+    radial-gradient(circle at 50% 90%, #2a2a4e 0%, transparent 35%),
+    #0d0d0d;
+}
+body.dark-mode nav {
+  background: rgba(20, 20, 30, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .logo {
+  -webkit-text-fill-color: #e0e0e0;
+  background: linear-gradient(135deg, #ff9ab5, #a7c5eb);
+  -webkit-background-clip: text;
+}
+body.dark-mode .card {
+  background: #1a1a2e;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .card-image {
+  background: #2a2a3e;
+}
+body.dark-mode .btn {
+  background: #2a2a3e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .btn:hover {
+  background: #3a3a4e;
+}
+body.dark-mode .price {
+  -webkit-text-fill-color: #e0e0e0;
+}
+body.dark-mode .lookbook {
+  background: linear-gradient(180deg, #0d0d0d, #1a1a2e);
+}
+body.dark-mode .marquee {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .about p {
+  color: #b0b0b0;
+}
+body.dark-mode .footer {
+  opacity: 0.5;
+  color: #888;
+}
+
+#dark-mode-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: background 0.3s, transform 0.2s;
+  touch-action: manipulation;
+}
+#dark-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+#dark-mode-btn:active {
+  transform: scale(0.95);
+}
+body.dark-mode #dark-mode-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+body.dark-mode #dark-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);

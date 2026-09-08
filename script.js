@@ -67,3 +67,14 @@ if ('ontouchstart' in window) {
     btn.style.minHeight = '48px';
   });
 }
+
+// Dark mode toggle
+const darkModeBtn = document.getElementById('dark-mode-btn');
+if (darkModeBtn) {
+  const isDark = localStorage.getItem('dark-mode') === 'true';
+  if (isDark) document.body.classList.add('dark-mode');
+  darkModeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+  });
+}
