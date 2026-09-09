@@ -12,6 +12,8 @@ const resultBox = document.getElementById('result-box');
 const errorMessage = document.getElementById('error-message');
 const binaryResultEl = document.getElementById('binary-result');
 const decimalResultEl = document.getElementById('decimal-result');
+const remainderBox = document.getElementById('remainder-box');
+const remainderResultEl = document.getElementById('remainder-result');
 
 opBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -20,6 +22,7 @@ opBtns.forEach(btn => {
         selectedOperation = btn.dataset.op;
         opSymbolEl.textContent = opSymbols[selectedOperation];
         hideError();
+        remainderBox.classList.add('hidden');
     });
 });
 
@@ -37,9 +40,15 @@ function hideError() {
     errorMessage.classList.add('hidden');
 }
 
-function showResult(binaryResult, decimalResult) {
+function showResult(binaryResult, decimalResult, remainder) {
     binaryResultEl.textContent = binaryResult;
     decimalResultEl.textContent = decimalResult;
+    if (remainder !== undefined && remainder !== null) {
+        remainderResultEl.textContent = remainder;
+        remainderBox.classList.remove('hidden');
+    } else {
+        remainderBox.classList.add('hidden');
+    }
     resultBox.classList.remove('hidden');
     resultBox.style.animation = 'fadeIn 0.3s ease';
 }
@@ -65,6 +74,7 @@ function calculate() {
 
     let binaryResult;
     let decimalResult;
+    let remainder;
 
     try {
         switch (selectedOperation) {
@@ -96,8 +106,10 @@ function calculate() {
                     return;
                 }
                 const quotient = a / b;
+                const rem = a % b;
                 binaryResult = quotient.toString(2);
                 decimalResult = quotient.toString(10);
+                remainder = rem === 0n ? '0' : rem.toString(2);
                 break;
             }
         }
@@ -106,7 +118,7 @@ function calculate() {
         return;
     }
 
-    showResult(binaryResult, decimalResult);
+    showResult(binaryResult, decimalResult, remainder);
 }
 
 function clearAll() {
@@ -118,6 +130,7 @@ function clearAll() {
     opSymbolEl.textContent = opSymbols['add'];
     resultBox.classList.add('hidden');
     hideError();
+    remainderBox.classList.add('hidden');
     operand1Input.classList.remove('invalid');
     operand2Input.classList.remove('invalid');
 }
