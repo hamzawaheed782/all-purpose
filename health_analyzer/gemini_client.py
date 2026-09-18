@@ -1,86 +1,139 @@
-"""Gemini API client for health analysis."""
+"""Enhanced Gemini API client with structured analysis."""
 import os
 import json
+import re
 import google.genai as genai
 from google.genai import types
+from config import MODEL_NAME
+from emergency_detector import detect_emergencies
+from analytics import compute_composite_severity
 
-def get_client():
-    """Get authenticated Gemini client."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not set")
-    return genai.Client(api_key=api_key)
-
-def analyze_health(symptoms: list[str], age: int = None, duration_days: int = None) -> dict:
-    """Send health symptoms to Gemini for analysis.
+def analyze_health(payload: dict) -> dict:
+    """Send structured health payload to Gemini for analysis.
 
     Args:
-        symptoms: List of symptom descriptions
-        age: Patient age (optional)
-        duration_days: How long symptoms have persisted (optional)
+        payload: Dict with user_id, age, gender, category, selected_symptoms,
+                 symptom_notes, duration_days, user_severity_rating,
+                 computed_severity_score, emergency_flags
 
     Returns:
-        Parsed analysis dict with recommendations
+        Dict with status, analysis, raw_response, model_used, emergency_info
     """
-    client = get_client()
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     model = client.models
 
+    # Extract data
+    user_id = payload.get("user_id", "anonymous")
+    age = payload.get("age")
+    gender = payload.get("gender", "")
+    category = payload.get("category", "")
+    symptoms = payload.get("selected_symptoms", [])
+    symptom_notes = payload.get("symptom_notes", "")
+    duration_days = payload.get("duration_days", 0)
+    user_severity = payload.get("user_severity_rating", 5)
+    computed_score = payload.get("computed_severity_score", 0)
+    emergency_flags = payload.get("emergency_flags", [])
+
     # Build prompt
-    prompt_parts = [
-        "You are a medical analysis assistant. Given the following symptoms, "
-        "provide a structured health analysis. NEVER provide a definitive diagnosis. "
-        "ALWAYS recommend seeing a qualified healthcare professional. "
-        "Respond in this exact JSON format:",
-        "",
-        '{"possible_causes": ["...", "..."], "severity": "low|medium|high", '
-        '"immediate_recommendations": ["...", "..."], '
-        '"when_to_see_doctor": "...", "general_tips": ["...", "..."]}',
-        "",
-        "SYMPTOMS:",
-    ]
-    for s in symptoms:
-        prompt_parts.append(f"  - {s}")
+    prompt = f"""You are a medical analysis assistant. Provide a structured health analysis. NEVER provide a definitive diagnosis. ALWAYS recommend seeing a qualified healthcare professional. Respond in this exact JSON format:
 
-    if age:
-        prompt_parts.append(f"Patient age: {age}")
-    if duration_days:
-        prompt_parts.append(f"Symptoms duration: {duration_days} days")
+{{
+  "emergency_warning": "None or specific red-flag notice",
+  "possible_causes": [
+    {{"name": "Condition Name", "likelihood": "High/Medium/Low", "description": "Brief description"}}
+  ],
+  "composite_severity": "Low|Moderate|High",
+  "immediate_recommendations": ["Recommendation 1", "Recommendation 2"],
+  "when_to_see_doctor": "Specific guidance on when to seek medical attention",
+  "general_tips": ["Tip 1", "Tip 2"]
+}}
 
-    prompt_parts.append(
-        "\nIMPORTANT: This is for informational purposes only and is NOT a "
-        "substitute for professional medical advice."
-    )
+PATIENT INFORMATION:
+- Age: {age}
+- Gender: {gender}
+- Category: {category}
+- Symptoms: {', '.join(symptoms)}
+- Symptom details: {symptom_notes}
+- Duration: {duration_days} days
+- User severity rating: {user_severity}/10
+- Computed severity score: {computed_score}
+- Red flags detected: {', '.join(emergency_flags) if emergency_flags else 'None'}
+
+IMPORTANT: This is for informational purposes only and is NOT a substitute for professional medical advice, diagnosis, or treatment."""
 
     try:
-        # Use Gemini 3.6 Flash for text analysis
         response = model.generate_content(
-            model="models/gemini-3.6-flash",
-            contents=prompt_parts,
+            model=f"models/{MODEL_NAME}",
+            contents=prompt,
         )
         text = response.text
 
-        # Try to extract JSON from response
-        try:
-            # Find JSON block
-            start = text.rfind("{")
-            end = text.rfind("}") + 1
-            if start >= 0 and end > start:
-                json_str = text[start:end]
-                analysis = json.loads(json_str)
-            else:
-                analysis = {"raw_response": text, "possible_causes": [], "severity": "unknown"}
-        except (json.JSONDecodeError, ValueError):
-            analysis = {"raw_response": text, "possible_causes": [], "severity": "unknown"}
+        # Try to extract JSON
+        analysis = _parse_json_response(text)
 
         return {
             "status": "success",
             "analysis": analysis,
             "raw_response": text,
-            "model_used": "gemini-3.6-flash",
+            "model_used": MODEL_NAME,
+            "emergency_info": {
+                "flags": emergency_flags,
+                "score": computed_score,
+                "severity_level": _get_severity_level(computed_score),
+            },
         }
 
     except Exception as e:
+        # Fallback to rule-based analysis
         return {
-            "status": "error",
+            "status": "fallback",
+            "analysis": _rule_based_fallback(symptoms, category, computed_score),
             "error": str(e),
         }
+
+def _parse_json_response(text: str) -> dict:
+    """Parse JSON from Gemini response with markdown wrappers."""
+    try:
+        # Try direct JSON
+        start = text.rfind("{")
+        end = text.rfind("}") + 1
+        if start >= 0 and end > start:
+            json_str = text[start:end]
+            return json.loads(json_str)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # Try extracting with regex (handle markdown code blocks)
+    try:
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            json_str = match.group()
+            # Fix common issues
+            json_str = json_str.replace("'", '"')  # single quotes
+            return json.loads(json_str)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    return {"raw_response": text, "possible_causes": [], "severity": "unknown"}
+
+def _get_severity_level(score: float) -> str:
+    """Map numeric score to severity level."""
+    if score >= 7:
+        return "High"
+    elif score >= 4:
+        return "Moderate"
+    else:
+        return "Low"
+
+def _rule_based_fallback(symptoms: list[str], category: str, score: float) -> dict:
+    """Rule-based analysis when API fails."""
+    severity = _get_severity_level(score)
+    return {
+        "possible_causes": [
+            {"name": f"{category} issue", "likelihood": "Possible", "description": f"Symptoms suggest a possible {category.lower()} condition"}
+        ],
+        "severity": severity,
+        "immediate_recommendations": ["Rest", "Stay hydrated", "Monitor symptoms"],
+        "when_to_see_doctor": "Consult a healthcare professional if symptoms worsen or persist beyond 3 days",
+        "general_tips": ["Get adequate rest", "Maintain hydration", "Avoid strenuous activity"],
+    }
